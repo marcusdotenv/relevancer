@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+message Node {
+    string letter = 1;
+    repeated string related_terms = 2;
+    map<string, Node> related_nodes = 3; 
+}
+
+message Trie {
+    Node root = 1;
+}

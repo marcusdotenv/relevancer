@@ -14,7 +14,9 @@ class Node:
     def assign_related_term(self, term: str):
         self.__related_terms.append(term)
 
-    def get_related_terms(self, amount: int):
+    def get_related_terms(self, amount: int=None):
+        if not amount:
+            return self.__related_terms
         return self.__related_terms[:amount]
 
     def is_final_node(self):
