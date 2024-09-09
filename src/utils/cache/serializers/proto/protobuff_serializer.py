@@ -20,7 +20,7 @@ class ProtobuffSerializer(SerializerContract):
     def serialize(self, trie: Trie) -> bytes:
         pb_trie = trie_pb2.Trie()
 
-        pb_trie.root.CopyFrom(self.__serialize_node(trie.get_nodes()))
+        pb_trie.root.CopyFrom(self.__serialize_node(trie.get_root_node()))
         return pb_trie.SerializeToString()
 
     def __deserialize_node(self, pb_node: trie_pb2.Node) -> Node:

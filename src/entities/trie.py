@@ -32,7 +32,7 @@ class Trie:
 
         return nodes[0]
 
-    def get_nodes(self) -> Node:
+    def get_root_node(self) -> Node:
         return self.__root
     
     def insert_many(self, terms: list[str]):

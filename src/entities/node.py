@@ -10,7 +10,11 @@ class Node:
         letter = next_node.letter.lower()
 
         self.__related_nodes.update({letter: next_node})
-    
+
+    def assign_related_nodes(self, related_nodes: dict[str, Node]):
+        self.__related_nodes = related_nodes
+
+
     def assign_related_term(self, term: str):
         self.__related_terms.append(term)
 

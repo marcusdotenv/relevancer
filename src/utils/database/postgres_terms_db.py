@@ -30,7 +30,7 @@ async def release_connection(conn):
     global pool
     await pool.release(conn)
 
-async def build_try_using_db() -> Trie:
+async def build_trie_from_db() -> Trie:
     connection = await get_connection()
     try:
         last_id = 0 
