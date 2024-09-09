@@ -4,7 +4,6 @@ class Node:
     def __init__(self, letter: str) -> None:
         self.letter = letter
         self.__related_nodes = {}
-        self.__related_terms = []
     
     def assign_new_node(self, next_node: Node):
         letter = next_node.letter.lower()
@@ -13,15 +12,6 @@ class Node:
 
     def assign_related_nodes(self, related_nodes: dict[str, Node]):
         self.__related_nodes = related_nodes
-
-
-    def assign_related_term(self, term: str):
-        self.__related_terms.append(term)
-
-    def get_related_terms(self, amount: int=None):
-        if not amount:
-            return self.__related_terms
-        return self.__related_terms[:amount]
 
     def is_final_node(self):
         return self.has_node_with_letter("*")

@@ -8,8 +8,7 @@ class ProtobuffSerializer(SerializerContract):
     def __serialize_node(self, node: Node) -> trie_pb2.Node:
 
         pb_node = trie_pb2.Node(
-            letter=node.letter,
-            related_terms=node.get_related_terms()
+            letter=node.letter
         )
 
         for letter, related_node in node.get_related_nodes().items():
@@ -26,7 +25,6 @@ class ProtobuffSerializer(SerializerContract):
     def __deserialize_node(self, pb_node: trie_pb2.Node) -> Node:
 
         node = Node(pb_node.letter)
-        node._Node__related_terms.extend(pb_node.related_terms)  
 
         for letter, pb_related_node in pb_node.related_nodes.items():
             node._Node__related_nodes[letter] = self.__deserialize_node(pb_related_node)

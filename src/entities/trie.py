@@ -27,7 +27,6 @@ class Trie:
         for i in range(len(nodes) - 1):
             node = nodes[i]
             node.assign_new_node(nodes[i + 1])
-            node.assign_related_term(term)
 
 
         return nodes[0]
@@ -67,19 +66,8 @@ class Trie:
             if not next_node.has_node_with_letter(letter):
                 next_node.assign_new_node(Node(letter))
             next_node = next_node.get_next_node_by_letter(letter)
-            next_node.assign_related_term(search_term)
 
         next_node.assign_new_node(Node("*"))
-    
-    def find_most_relevant(self, search_term: str, amount: int) -> list[str]:
-        node_to_search = self.__root
-        for letter in search_term:
-            if not node_to_search.has_node_with_letter(letter):
-                return [] # d~uvida nessa regra aqui
-            
-            node_to_search = node_to_search.get_next_node_by_letter(letter)
-
-        return node_to_search.get_related_terms(amount)
 
     def starts_with(self, search_term: str) -> bool:
         node_to_search = self.__root
@@ -91,3 +79,38 @@ class Trie:
             node_to_search = node_to_search.get_next_node_by_letter(letter)
 
             return True
+
+    def __find_last_prefix_node(self, search_term: str) -> Node | None:
+        node_to_search = self.__root
+
+        for letter in search_term:
+            if not node_to_search.has_node_with_letter(letter):
+                return None
+            
+            node_to_search = node_to_search.get_next_node_by_letter(letter)
+        
+        return node_to_search
+
+    def __collect_words_from_node_lazy(self, node: Node, prefix: str):
+        if node.is_final_node():
+            yield prefix
+
+        for letter, next_node in node.get_related_nodes().items():
+            if letter != "*":  
+                yield from self.__collect_words_from_node_lazy(next_node, prefix + letter)
+
+    def find_words_by_prefix(self, prefix: str, limit: int) -> list[str]:
+        last_node = self.__find_last_prefix_node(search_term=prefix)
+        if not last_node:
+            return []
+        
+        word_generator = self.__collect_words_from_node_lazy(node=last_node, prefix=prefix)
+
+        words = []
+        for _ in range(limit):
+            try:
+                words.append(next(word_generator))
+            except StopIteration:
+                break 
+
+        return words

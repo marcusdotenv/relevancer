@@ -76,24 +76,6 @@ class TrieTest(unittest.TestCase):
         self.assertTrue(trie.starts_with("te"))
         self.assertFalse(trie.search("te"))
 
-    def test_assign_search_terms(self):
-        trie = Trie("root")
-        trie.insert("mar")
-        trie.insert("marcus")
-        trie.insert("matheus")
-        trie.insert("macarrão")
-        trie.insert("marreta")
-
-        first_letter = trie.get_root_node().get_next_node_by_letter("m")
-        self.assertEqual(["mar", "marcus", "matheus"], first_letter.get_related_terms(3))
-
-
-        letter_r = first_letter.get_next_node_by_letter("a")\
-                               .get_next_node_by_letter("r")
-        
-        self.assertEqual(["mar", "marcus"], letter_r.get_related_terms(2))
-        self.assertEqual(["mar", "marcus", "marreta"], letter_r.get_related_terms(3))
-
     def test_find_most_relevant(self):
         trie = Trie("root")
         trie.insert("term1")
