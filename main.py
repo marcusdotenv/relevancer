@@ -1,25 +1,22 @@
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from src.utils.database.db import build_try_using_db
-from src.utils.cache.serializers.protobuff_serializer import ProtobuffSerializer
-import redis
+from src.utils.cache.redis_trie_cache import RedisTrieCache
+from src.utils.cache.serializers.proto.protobuff_serializer import ProtobuffSerializer
+
 
 app = FastAPI()
 load_dotenv()
 
 trie = None
-serializer = ProtobuffSerializer()
-r = redis.StrictRedis(host='localhost', port=6379, db=0)
+protobuff = ProtobuffSerializer()
+cache = RedisTrieCache(serializer=protobuff)
 
 @app.get("/terms")
 async def terms(search_term: str, amount: int):
-    global trie
-    if trie == None:
-        trie = await build_try_using_db()
-        serialized = serializer.serialize(trie=trie)
-        r.set("root", serialized)
+    if cache.is_trie_saved():
+        return cache.retrieve().find_most_relevant(search_term=search_term, amount=amount)
     
-    stored = r.get("root")
-    deserialized_trie = serializer.deserialize(serialized_bytes=stored)
-
-    return deserialized_trie.find_most_relevant(search_term=search_term, amount=amount)
+    db_trie = await build_try_using_db()
+    cache.save(trie=trie)
+    return db_trie.find_most_relevant(search_term=search_term, amount=amount)

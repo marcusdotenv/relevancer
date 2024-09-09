@@ -1,8 +1,9 @@
 from typing import Any
-from src.utils.cache.serializers import trie_pb2  
+from src.utils.cache.serializers.proto import trie_pb2  
 from src.entities.trie import Trie, Node
+from src.utils.cache.serializers.serializer_contract import SerializerContract
 
-class ProtobuffSerializer:
+class ProtobuffSerializer(SerializerContract):
 
     def __serialize_node(self, node: Node) -> trie_pb2.Node:
 
