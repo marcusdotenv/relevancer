@@ -8,7 +8,7 @@ class TrieTest(unittest.TestCase):
         trie = Trie("root")
         trie.insert("term")
 
-        last_node = trie.get_nodes().get_next_node_by_letter("t")\
+        last_node = trie.get_root_node().get_next_node_by_letter("t")\
                                     .get_next_node_by_letter("e")\
                                     .get_next_node_by_letter("r")\
                                     .get_next_node_by_letter("m")\
@@ -23,7 +23,7 @@ class TrieTest(unittest.TestCase):
 
        # trie.print_all_nodes_from_root()
 
-        last_node = trie.get_nodes().get_next_node_by_letter("t")\
+        last_node = trie.get_root_node().get_next_node_by_letter("t")\
                                     .get_next_node_by_letter("e")\
                                     .get_next_node_by_letter("r")\
                                     .get_next_node_by_letter("m")
@@ -39,7 +39,7 @@ class TrieTest(unittest.TestCase):
         trie = Trie("root")
         trie.insert_many(["term1", "term2"])
 
-        last_node = trie.get_nodes().get_next_node_by_letter("t")\
+        last_node = trie.get_root_node().get_next_node_by_letter("t")\
                                     .get_next_node_by_letter("e")\
                                     .get_next_node_by_letter("r")\
                                     .get_next_node_by_letter("m")\
@@ -84,7 +84,7 @@ class TrieTest(unittest.TestCase):
         trie.insert("macarrão")
         trie.insert("marreta")
 
-        first_letter = trie.get_nodes().get_next_node_by_letter("m")
+        first_letter = trie.get_root_node().get_next_node_by_letter("m")
         self.assertEqual(["mar", "marcus", "matheus"], first_letter.get_related_terms(3))
 
 
