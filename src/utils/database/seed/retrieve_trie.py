@@ -2,7 +2,7 @@
 import asyncpg
 from src.entities.trie import Trie
 
-async def retrieve_terms_and_get_trie(connection: asyncpg.pool.PoolAcquireContext, limit: int) -> Trie:
+async def build_try_using_db(connection: asyncpg.pool.PoolAcquireContext, limit: int) -> Trie:
     try:
         last_id = 0 
         trie = Trie("root")
