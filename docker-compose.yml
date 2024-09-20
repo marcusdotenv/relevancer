@@ -14,6 +14,7 @@ services:
       - "5432:5432"
     volumes:
       - ./api/src/utils/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
   cache:
     restart: always
     container_name: redis
@@ -21,6 +22,7 @@ services:
     hostname: redis
     ports:
       - "6379:6379"
+
   api:
     build: 
       context: ./api
@@ -38,3 +40,30 @@ services:
       - CACHE_PORT=6379
     volumes:
       - ./api:/app
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      - cache
+      - db
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=dev
+      - GF_SECURITY_ADMIN_PASSWORD=dev
+    depends_on:
+      - loki
+    volumes:
+      - ./config/grafana/datasources:/etc/grafana/provisioning/datasources
+
+
