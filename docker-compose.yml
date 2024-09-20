@@ -3,7 +3,7 @@ version: '3'
 services:
   db:
     restart: always
-    container_name: postgree
+    container_name: postgres
     image: postgres:latest
     hostname: db
     environment:
@@ -13,4 +13,28 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./src/utils/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./api/src/utils/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+  cache:
+    restart: always
+    container_name: redis
+    image: redis:latest
+    hostname: redis
+    ports:
+      - "6379:6379"
+  api:
+    build: 
+      context: ./api
+      dockerfile: dockerfile.dev
+    ports:
+      - "8000:8000"
+    environment:
+      - ENV=production
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - DATABASE_USER=dev
+      - DATABASE_PASSWD=dev
+      - DATABASE_NAME=trie
+      - CACHE_HOST=cache
+      - CACHE_PORT=6379
+    volumes:
+      - ./api:/app
