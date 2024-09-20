@@ -3,7 +3,7 @@ version: '3'
 services:
   db:
     restart: always
-    container_name: postgree
+    container_name: postgres
     image: postgres:latest
     hostname: db
     environment:
@@ -13,4 +13,56 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./src/utils/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./api/src/utils/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  cache:
+    restart: always
+    container_name: redis
+    image: redis:latest
+    hostname: redis
+    ports:
+      - "6379:6379"
+
+  api:
+    build: 
+      context: ./api
+      dockerfile: dockerfile.dev
+    ports:
+      - "8000:8000"
+    environment:
+      - ENV=production
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - DATABASE_USER=dev
+      - DATABASE_PASSWD=dev
+      - DATABASE_NAME=trie
+      - CACHE_HOST=cache
+      - CACHE_PORT=6379
+    volumes:
+      - ./api:/app
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      - cache
+      - db
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=dev
+      - GF_SECURITY_ADMIN_PASSWORD=dev
+    depends_on:
+      - loki
+    volumes:
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards

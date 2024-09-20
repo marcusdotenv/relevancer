@@ -1,0 +1,23 @@
+# Usar a imagem base do Python
+FROM python:3.12-slim
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+EXPOSE 8000
+
+
+RUN apt-get update && \
+    apt-get install -y curl && \
+    curl -O -L "https://github.com/grafana/loki/releases/download/v2.9.0/promtail-linux-amd64.zip" && \
+    apt-get install -y unzip && \
+    unzip promtail-linux-amd64.zip && \
+    chmod a+x promtail-linux-amd64 && \
+    mv promtail-linux-amd64 /usr/local/bin/promtail && \
+    rm promtail-linux-amd64.zip
+
+
+COPY ../config/promtail-config.yml /etc/promtail/promtail-config.yml
+
+CMD ["sh", "-c", "fastapi dev ./src/application/http/main.py --host 0.0.0.0 > /var/log/api-python.log 2>&1 & promtail -config.file=/etc/promtail/promtail-config.yml"]
