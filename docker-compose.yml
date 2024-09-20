@@ -64,6 +64,5 @@ services:
     depends_on:
       - loki
     volumes:
-      - ./config/grafana/datasources:/etc/grafana/provisioning/datasources
-
-
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+      - ./config/grafana/dashboards:/var/lib/grafana/dashboards
