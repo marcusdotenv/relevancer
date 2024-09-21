@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from datetime import datetime
 
 class LogTearmSearch(BaseModel):
-    searched_at: str
+    frequency: int
     term: str
 
 class LokiLogSource(LogSource):
@@ -13,23 +13,21 @@ class LokiLogSource(LogSource):
         self.__loki_base_url = "http://localhost:3100"
 
     def __retrieve_term_search(self, log_line: list[str]) -> LogTearmSearch:
-        splitted = log_line[1].split(" - search - ")
-        return LogTearmSearch(searched_at=splitted[0], term=splitted[1])
+        frequency =int(log_line.get("value", None)[1])
+        term = log_line.get("metric", None).get("term", "")
+        return LogTearmSearch(frequency=frequency, term=term)
     
     def retrieve(self) -> list[LogTearmSearch]:
-        today = datetime.now()
-        start_date = today.replace(hour=0, minute=0, second=0, microsecond=0).isoformat() + 'Z'
-        end_date = today.replace(hour=23, minute=59, second=59, microsecond=999999).isoformat() + 'Z'
+        now = datetime.now()
 
-        query = '{job="api"} |= "- search -"'
+        query = 'sum by (term)(count_over_time({job="api"} |= "search" | pattern "<timestamp> - search - <term>" | term != ""  [1d]))'
         
         try:
             response = requests.get(
-                f'{self.__loki_base_url}/loki/api/v1/query_range',
+                f'{self.__loki_base_url}/loki/api/v1/query',
                 params={
                     'query': query,
-                    'start': start_date,
-                    'end': end_date
+                    'time': now.timestamp(),
                 }
             )
             response.raise_for_status()
@@ -38,8 +36,7 @@ class LokiLogSource(LogSource):
             if not result:
                 return []
 
-            values = result[0].get("values", [])
-            return list(map(self.__retrieve_term_search, values))
+            return list(map(self.__retrieve_term_search, result))
 
         except requests.exceptions.RequestException as e:
             print(f"Erro ao recuperar logs: {e}")
