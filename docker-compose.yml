@@ -38,6 +38,7 @@ services:
       - DATABASE_NAME=trie
       - CACHE_HOST=cache
       - CACHE_PORT=6379
+      - LOG_SOURCE_URL=http://loki:3100
     volumes:
       - ./api:/app
     logging:
@@ -66,3 +67,26 @@ services:
     volumes:
       - ./config/grafana/provisioning:/etc/grafana/provisioning
       - ./config/grafana/dashboards:/var/lib/grafana/dashboards
+  
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "4566:4566" 
+      - "4510-4559:4510-4559" 
+      - "8080:8080"
+    environment:
+      - SERVICES=s3 
+    volumes:
+      - ./config/localstack/init:/etc/localstack/init 
+  
+  localstack-infra-starter:
+    image: amazon/aws-cli
+    depends_on:
+      - localstack
+    environment:
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+    volumes:
+      - ./config/localstack/init:/etc/localstack/init 
+    entrypoint: ["/bin/sh", "-c", "chmod +x /etc/localstack/init/create_bucket.sh && /etc/localstack/init/create_bucket.sh"]
