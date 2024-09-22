@@ -38,6 +38,7 @@ services:
       - DATABASE_NAME=trie
       - CACHE_HOST=cache
       - CACHE_PORT=6379
+      - LOG_SOURCE_URL=http://loki:3100
     volumes:
       - ./api:/app
     logging:
