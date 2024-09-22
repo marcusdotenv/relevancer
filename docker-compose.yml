@@ -1,23 +1,8 @@
 version: '3'
 
 services:
-  db:
-    restart: always
-    container_name: postgres
-    image: postgres:latest
-    hostname: db
-    environment:
-      - POSTGRES_PASSWORD=dev
-      - POSTGRES_USER=dev
-      - POSTGRES_DB=trie
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./api/src/utils/database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   cache:
-    restart: always
-    container_name: redis
     image: redis:latest
     hostname: redis
     ports:
@@ -39,8 +24,9 @@ services:
       - CACHE_HOST=cache
       - CACHE_PORT=6379
       - LOG_SOURCE_URL=http://loki:3100
+      - TERM_FILE_STORAGE_URL=http://localstack:4566
     volumes:
-      - ./api:/app
+      - ./api:/app # enable development with hot reload 
     logging:
       driver: "json-file"
       options:
@@ -48,7 +34,7 @@ services:
         max-file: "3"
     depends_on:
       - cache
-      - db
+      - localstack
 
   loki:
     image: grafana/loki:latest

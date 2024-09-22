@@ -2,11 +2,12 @@ from io import StringIO
 from src.infrastructure.pipeline.contracts.term_file_storage import TermFileStorage
 import boto3
 import pandas as pd
+import os
 
 class S3TermFileStorage(TermFileStorage):
 
     def __init__(self) -> None:
-        self.__client = boto3.client('s3', endpoint_url='http://localhost:4566', 
+        self.__client = boto3.client('s3', endpoint_url=os.getenv("TERM_FILE_STORAGE_URL"), 
                                            aws_access_key_id='test', 
                                            aws_secret_access_key='test'
         )
