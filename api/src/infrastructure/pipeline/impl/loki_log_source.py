@@ -19,23 +19,20 @@ class LokiLogSource(LogSource):
     
     def retrieve(self) -> list[LogTearmSearch]:
         now = datetime.now()
-        query = 'sum by (term)(count_over_time({job="api"} |= "- search -" | pattern "<timestamp> - search - <term>" | term != ""  [1d]))'
+        aggregate_logs_query = 'sum by (term)(count_over_time({job="api"} |= "- search -" | pattern "<timestamp> - search - <term>" | term != ""  [1d]))'
     
         try:
             response = requests.get(
-                f'{self.__loki_base_url}/loki/api/v1/query',
-                params={
-                    'query': query,
-                    'time': now.timestamp(),
-                }
+                url=f'{self.__loki_base_url}/loki/api/v1/query',
+                params={ 'query': aggregate_logs_query, 'time': now.timestamp() }
             )
             response.raise_for_status()
 
-            result = response.json().get('data', {}).get('result', [])
-            if not result:
+            aggregated_logs = response.json().get('data', {}).get('result', [])
+            if not aggregated_logs:
                 return []
 
-            return list(map(self.__retrieve_term_search, result))
+            return list(map(self.__retrieve_term_search, aggregated_logs))
 
         except requests.exceptions.RequestException as e:
             print(f"Erro ao recuperar logs: {e}")
