@@ -35,7 +35,7 @@ class PandasTermLoaderPipeline(TermLoaderPipeline):
 
         new_trie = Trie(partition_name="root")
 
-        updated_terms["term"].apply(new_trie.insert)
+        updated_terms.apply(lambda row: new_trie.insert(row['term'], row['frequency']), axis=1)
 
         logger.info("A new local trie was generated")
         self.__trie_cache.save(trie=new_trie)

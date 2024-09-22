@@ -18,7 +18,7 @@ async def handler(search_term: str, amount: int, cache: RedisTrieCache=Depends(g
     logger.info(f"search - {search_term}")
 
     if cache.exists(term=search_term):
-        return cache.retrieve(term=search_term).find_words_by_prefix(prefix=search_term, limit=amount)
+        return cache.retrieve(term=search_term).find_terms_by_prefix(prefix=search_term, limit=amount)
     
     else:
         # In this case, cache is already loaded by pipeline

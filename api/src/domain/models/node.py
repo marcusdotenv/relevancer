@@ -4,10 +4,10 @@ class Node:
     def __init__(self, letter: str) -> None:
         self.letter = letter
         self.__related_nodes = {}
-    
+        self.frequency = 0
+
     def assign_new_node(self, next_node: Node):
         letter = next_node.letter.lower()
-
         self.__related_nodes.update({letter: next_node})
 
     def assign_related_nodes(self, related_nodes: dict[str, Node]):
@@ -26,6 +26,11 @@ class Node:
         return self.__related_nodes.get(letter)
 
     def show(self, prefix=""):
-        string_to_show = f"{prefix}|-- {self.letter}"
-
+        string_to_show = f"{prefix}|-- {self.letter} (freq: {self.frequency})"
         print(string_to_show)
+
+    def set_frequency(self, frequency: int):
+        self.frequency = frequency
+
+    def get_frequency(self) -> int:
+        return self.frequency

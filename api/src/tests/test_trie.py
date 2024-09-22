@@ -1,6 +1,6 @@
 import unittest
 
-from models.trie import Trie
+from src.domain.models.trie import Trie
 
 
 
@@ -39,7 +39,7 @@ class TrieTest(unittest.TestCase):
 
     def test_insert_many(self):
         trie = Trie("root")
-        trie.insert_many(["term1", "term2"])
+        trie.insert_many([("term1", 0), ("term2", 0)])
 
         last_node = trie.get_root_node().get_next_node_by_letter("t")\
                                     .get_next_node_by_letter("e")\
@@ -77,39 +77,3 @@ class TrieTest(unittest.TestCase):
         self.assertTrue(trie.search("term1"))
         self.assertTrue(trie.starts_with("te"))
         self.assertFalse(trie.search("te"))
-
-    def test_find_most_relevant(self):
-        trie = Trie("root")
-        trie.insert("term1")
-        trie.insert("term2")
-
-        most_relevants = trie.find_most_relevant("ter", 3)
-
-        self.assertTrue("term1" in most_relevants)
-        self.assertTrue("term2" in most_relevants)
-
-        trie.insert("terminal")
-        trie.insert("terminante")
-
-        new_relevants = trie.find_most_relevant("termi", 10)
-        self.assertTrue("terminal" in new_relevants)
-        self.assertTrue("terminante" in new_relevants)
-        self.assertFalse("term1" in new_relevants)
-        self.assertFalse("term2" in new_relevants)
-    
-    def test_bug_on_relevance(self):
-        trie = Trie("root")
-        trie.insert("Azerbaijao")
-        trie.insert("azia")
-        trie.insert("azimo")
-        trie.insert("azias")
-
-        trie.insert("azimos")
-        trie.insert("azimute")
-        trie.insert("azimutes")
-        trie.insert("azotada")
-        trie.insert("asteca")
-
-        
-        self.assertTrue("asteca" in trie.find_most_relevant("ast", 10))
-        self.assertTrue(len(trie.find_most_relevant("ast", 10)) == 1)

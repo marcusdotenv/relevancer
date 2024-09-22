@@ -3,8 +3,9 @@ syntax = "proto3";
 message Node {
     string letter = 1;
     map<string, Node> related_nodes = 2; 
+    int32 frequency = 3;
 }
 
 message Trie {
-    Node root = 1;
+    Node root = 1;  
 }

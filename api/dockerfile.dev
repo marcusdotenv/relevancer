@@ -1,11 +1,26 @@
 FROM python:3.12-slim
 
+#Protobuff compiler
+RUN apt-get update && \
+    apt-get install -y curl unzip && \
+    curl -O -L "https://github.com/protocolbuffers/protobuf/releases/download/v23.4/protoc-23.4-linux-x86_64.zip" && \
+    unzip protoc-23.4-linux-x86_64.zip -d /usr/local/ && \
+    chmod +x /usr/local/bin/protoc && \
+    rm protoc-23.4-linux-x86_64.zip
+
+# python project
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
-EXPOSE 8000
 
+# generate protobuff serializer file from config
+RUN protoc --proto_path=/app/src/infrastructure/adapters/impl/serializer/proto \
+    --python_out=/app/src/infrastructure/adapters/impl/serializer/proto \
+    /app/src/infrastructure/adapters/impl/serializer/proto/trie.proto
+
+
+#promtail config
 RUN apt-get update && \
     apt-get install -y curl && \
     curl -O -L "https://github.com/grafana/loki/releases/download/v2.9.0/promtail-linux-amd64.zip" && \
@@ -14,8 +29,8 @@ RUN apt-get update && \
     chmod a+x promtail-linux-amd64 && \
     mv promtail-linux-amd64 /usr/local/bin/promtail && \
     rm promtail-linux-amd64.zip
-
 COPY promtail-config.yml /etc/promtail/promtail-config.yml
 
 
+EXPOSE 8000
 CMD ["sh", "-c", "fastapi dev ./src/application/http/main.py --host 0.0.0.0 > /var/log/api-python.log 2>&1 & promtail -config.file=/etc/promtail/promtail-config.yml"]
