@@ -105,5 +105,12 @@ class TrieTest(unittest.TestCase):
         self.assertEqual(related_terms[0], "Esse é o nome de um produto")
 
 
+    def test_long_strings(self):
+        trie = Trie("root")
+        trie.insert("Haier 15' Black Flat Panel LCD HDTV DVD Combo - HLC15R", 1)
+
+        related = trie.find_terms_by_prefix("h", limit=10)
+        self.assertEqual(len(related), 1)
+
 
 

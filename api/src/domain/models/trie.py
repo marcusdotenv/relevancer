@@ -89,11 +89,12 @@ class Trie:
         return collected_terms
 
     def find_terms_by_prefix(self, prefix: str, limit: int) -> list[str]:
-        last_node = self.__find_last_prefix_node(search_term=prefix)
+        lower_prefix = prefix.lower()
+        last_node = self.__find_last_prefix_node(search_term=lower_prefix)
         if not last_node:
             return []
 
-        term_frequencies = self.__collect_terms_from_node_lazy(last_node, prefix)
+        term_frequencies = self.__collect_terms_from_node_lazy(last_node, lower_prefix)
 
         term_frequencies_sorted = sorted(term_frequencies, key=lambda it: it[1], reverse=True)
 
