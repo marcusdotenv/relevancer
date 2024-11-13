@@ -4,6 +4,7 @@ message Node {
     string letter = 1;
     map<string, Node> related_nodes = 2; 
     int32 frequency = 3;
+    string term = 4;
 }
 
 message Trie {

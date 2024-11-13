@@ -23,7 +23,7 @@ class PandasTermLoaderPipeline(TermLoaderPipeline):
         log_terms = pd.DataFrame(dict_logs)
         new_trie = Trie(partition_name="root")
 
-        known_terms = self.__term_file_storage.load_terms_by_filename(name="default.json")
+        known_terms = self.__term_file_storage.load_terms_by_filename(name="default.jsonl")
 
         if len(log_terms) == 0:
             known_terms.apply(lambda row: new_trie.insert(row['term'], row['frequency']), axis=1)
@@ -34,7 +34,7 @@ class PandasTermLoaderPipeline(TermLoaderPipeline):
             updated_terms = updated_terms[['term', 'frequency']]
             logger.info(f"Locally, the terms was updated")
 
-            self.__term_file_storage.replace_term_file_by_name(name="default.json", updated_df=updated_terms)
+            self.__term_file_storage.replace_term_file_by_name(name="default.jsonl", updated_df=updated_terms)
             logger.info("Term File Storage updated the file default.json")
 
             updated_terms.apply(lambda row: new_trie.insert(row['term'], row['frequency']), axis=1)

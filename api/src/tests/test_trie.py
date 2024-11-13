@@ -92,3 +92,18 @@ class TrieTest(unittest.TestCase):
         new_related_terms = trie.find_terms_by_prefix(prefix="t", limit=10)
         self.assertEqual(len(new_related_terms), 5)
         self.assertEqual(new_related_terms[0], "term44")
+    
+
+    def test_find_by_prefix_and_return_original_string(self):
+        trie = Trie("root")
+        trie.insert("Esse é o nome de um produto", 2)
+        trie.insert("Elefante colorido", 1)
+
+
+        related_terms = trie.find_terms_by_prefix("e", limit=10)
+        self.assertEqual(len(related_terms), 2)
+        self.assertEqual(related_terms[0], "Esse é o nome de um produto")
+
+
+
+

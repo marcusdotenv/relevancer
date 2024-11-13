@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 class Node:
-    def __init__(self, letter: str) -> None:
+    def __init__(self, letter: str, term: str="", frequency:int=0) -> None:
         self.letter = letter
         self.__related_nodes = {}
-        self.frequency = 0
+        self.frequency = frequency
+        self.term = term
 
     def assign_new_node(self, next_node: Node):
         letter = next_node.letter.lower()
@@ -26,7 +27,7 @@ class Node:
         return self.__related_nodes.get(letter)
 
     def show(self, prefix=""):
-        string_to_show = f"{prefix}|-- {self.letter} (freq: {self.frequency})"
+        string_to_show = f"{prefix}|-- {self.letter} (freq: {self.frequency}) (term: {self.term})"
         print(string_to_show)
 
     def set_frequency(self, frequency: int):
