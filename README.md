@@ -2,7 +2,7 @@
 
 ## Introduction
 
-A proof of concept of a system capable of searching for terms using trie trees based on the implementation described by Alex Xu, in the book [System Design Interview - An Insiders Guide: Volume 2](https://www.amazon.com.br/System-Design-Interview-insiders-Second/dp/B08CMF2CQF)
+A proof of concept of a system capable of searching for terms using trie trees based on the implementation described by Alex Xu, in the book [System Design Interview - An Insiders Guide](https://www.amazon.com.br/System-Design-Interview-insiders-Second/dp/B08CMF2CQF)
 
 ## Archtecture
 
