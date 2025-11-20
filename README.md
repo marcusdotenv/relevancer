@@ -1,4 +1,4 @@
-# Relevancer
+# Proof of Concept - Using Trie Trees on ranking terms by relevance
 
 ## Introduction
 
