@@ -2,7 +2,7 @@
 
 ## Introduction
 
-A proof of concept of a system capable of searching for terms using trie trees based on the implementation described by Alex Xu, in the book [System Design Interview - An Insiders Guide](https://www.amazon.com.br/System-Design-Interview-insiders-Second/dp/B08CMF2CQF)
+A proof of concept of a system capable of searching for terms and rank by relevance using trie trees based on the implementation described by Alex Xu, in the book [System Design Interview - An Insiders Guide](https://www.amazon.com.br/System-Design-Interview-insiders-Second/dp/B08CMF2CQF)
 
 ## Archtecture
 
@@ -21,5 +21,5 @@ A proof of concept of a system capable of searching for terms using trie trees b
 1. The API generates logs related to the terms searched by users;
 2. These logs are exported to Grafana, where they will be aggregated and can even be visualized;
 3. The API triggers the pipeline through an endpoint, which will request the logs from Grafana and will process them to update the terms file in S3.
-4. Once the file is updated in S3, the trie tree referring to the terms is generated and saved in partitioned Redis, where it can be consulted in step 1.
+4. Once the file is updated in S3, the trie tree referring to the terms is generated and saved in partitioned Redis, where it can be retrieved reanked by the number of searchs in step 1.
 
