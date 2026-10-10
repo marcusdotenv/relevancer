@@ -19,6 +19,7 @@ services:
       - LOG_SOURCE_URL=http://loki:3100
       - TERM_FILE_STORAGE_URL=http://localstack:4566
       - TERM_FILE_STORAGE_BUCKET=trie-bucket
+      - TERM_FILE_NAME=default.jsonl
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
       - AWS_DEFAULT_REGION=us-east-1
@@ -75,6 +76,7 @@ services:
       - AWS_SECRET_ACCESS_KEY=test
       - AWS_DEFAULT_REGION=us-east-1
       - TERM_FILE_STORAGE_BUCKET=trie-bucket
+      - TERM_FILE_NAME=default.jsonl
     volumes:
       - ./config/localstack/init:/etc/localstack/init 
     entrypoint: ["/bin/sh", "-c", "chmod +x /etc/localstack/init/create_bucket.sh && /etc/localstack/init/create_bucket.sh"]
