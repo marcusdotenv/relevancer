@@ -1,9 +1,7 @@
-version: '3'
-
 services:
 
   cache:
-    image: redis:latest
+    image: redis:7.4.1
     hostname: redis
     ports:
       - "6379:6379"
@@ -16,15 +14,14 @@ services:
       - "8000:8000"
     environment:
       - ENV=production
-      - DATABASE_HOST=db
-      - DATABASE_PORT=5432
-      - DATABASE_USER=dev
-      - DATABASE_PASSWD=dev
-      - DATABASE_NAME=trie
       - CACHE_HOST=cache
       - CACHE_PORT=6379
       - LOG_SOURCE_URL=http://loki:3100
       - TERM_FILE_STORAGE_URL=http://localstack:4566
+      - TERM_FILE_STORAGE_BUCKET=trie-bucket
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
     volumes:
       - ./api:/app # enable development with hot reload 
     logging:
@@ -37,14 +34,14 @@ services:
       - localstack
 
   loki:
-    image: grafana/loki:latest
+    image: grafana/loki:3.2.1
     ports:
       - "3100:3100"
     logging:
       driver: "none" 
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:11.3.0
     ports:
       - "3000:3000"
     environment:
@@ -59,7 +56,7 @@ services:
       driver: "none" 
 
   localstack:
-    image: localstack/localstack
+    image: localstack/localstack:3.8.1
     ports:
       - "4566:4566" 
       - "4510-4559:4510-4559" 
@@ -70,13 +67,14 @@ services:
       - ./config/localstack/init:/etc/localstack/init
 
   localstack-infra-starter:
-    image: amazon/aws-cli
+    image: amazon/aws-cli:2.18.0
     depends_on:
       - localstack
     environment:
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
       - AWS_DEFAULT_REGION=us-east-1
+      - TERM_FILE_STORAGE_BUCKET=trie-bucket
     volumes:
       - ./config/localstack/init:/etc/localstack/init 
     entrypoint: ["/bin/sh", "-c", "chmod +x /etc/localstack/init/create_bucket.sh && /etc/localstack/init/create_bucket.sh"]

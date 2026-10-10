@@ -12,8 +12,8 @@ wait_for_localstack() {
 
 wait_for_localstack
 
-echo "starting new bucket trie-bucket"
-aws --endpoint-url=http://localstack:4566 s3api create-bucket --bucket trie-bucket
+echo "starting new bucket $TERM_FILE_STORAGE_BUCKET"
+aws --endpoint-url=http://localstack:4566 s3api create-bucket --bucket "$TERM_FILE_STORAGE_BUCKET"
 
-echo "loading to trie-bucket file default.json"
-aws --endpoint-url=http://localstack:4566 s3 cp /etc/localstack/init/default.json s3://trie-bucket/
+echo "loading to $TERM_FILE_STORAGE_BUCKET file default.json"
+aws --endpoint-url=http://localstack:4566 s3 cp /etc/localstack/init/default.json "s3://$TERM_FILE_STORAGE_BUCKET/"

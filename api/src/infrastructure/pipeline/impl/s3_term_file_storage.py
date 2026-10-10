@@ -7,11 +7,9 @@ import os
 class S3TermFileStorage(TermFileStorage):
 
     def __init__(self) -> None:
-        self.__client = boto3.client('s3', endpoint_url=os.getenv("TERM_FILE_STORAGE_URL"), 
-                                           aws_access_key_id='test', 
-                                           aws_secret_access_key='test'
-        )
-        self.__bucket_name = "trie-bucket"
+        # credentials and region come from the standard AWS_* environment variables
+        self.__client = boto3.client('s3', endpoint_url=os.getenv("TERM_FILE_STORAGE_URL"))
+        self.__bucket_name = os.getenv("TERM_FILE_STORAGE_BUCKET")
 
 
     def load_terms_by_filename(self, name: str) -> pd.DataFrame:
