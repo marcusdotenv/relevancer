@@ -2,9 +2,9 @@ import unittest
 
 import pandas as pd
 
-from src.domain.models.term import MAX_TERM_LENGTH
-from src.domain.models.trie import Trie
-from src.infrastructure.adapters.contracts.trie_cache_contract import TrieCacheContract
+from src.domain.models.suggestions import find_suggestions
+from src.domain.models.term import MAX_SUGGESTED_TERMS, MAX_TERM_LENGTH
+from src.infrastructure.adapters.contracts.suggestion_cache_contract import SuggestionCacheContract
 from src.infrastructure.pipeline.contracts.log_source import LogSource
 from src.infrastructure.pipeline.contracts.term_file_storage import TermFileStorage
 from src.infrastructure.pipeline.impl.pandas_term_loader_pipeline import PandasTermLoaderPipeline
@@ -14,36 +14,41 @@ from src.infrastructure.pipeline.models.log_source import LogTearmSearch
 class FakeLogSource(LogSource):
     def __init__(self, logs: list[LogTearmSearch]) -> None:
         self.__logs = logs
+        self.retrieved_times = 0
 
     def retrieve(self) -> list[LogTearmSearch]:
+        self.retrieved_times += 1
         return self.__logs
 
 
 class FakeTermFileStorage(TermFileStorage):
     def __init__(self, files: dict[str, pd.DataFrame]) -> None:
         self.files = files
+        self.loaded_times = 0
+        self.replaced_times = 0
+        self.on_load = lambda: None
 
     def load_terms_by_filename(self, name: str) -> pd.DataFrame:
+        self.loaded_times += 1
+        self.on_load()
         if name not in self.files:
             raise KeyError(f"The specified key does not exist: {name}")
         return self.files[name]
 
     def replace_term_file_by_name(self, name: str, updated_df: pd.DataFrame):
+        self.replaced_times += 1
         self.files[name] = updated_df
 
 
-class FakeTrieCache(TrieCacheContract):
+class FakeSuggestionCache(SuggestionCacheContract):
     def __init__(self) -> None:
-        self.saved_trie = None
+        self.saved_suggestions = None
 
-    def save(self, trie: Trie):
-        self.saved_trie = trie
+    def save(self, suggestions_by_prefix: dict[str, list[str]]):
+        self.saved_suggestions = suggestions_by_prefix
 
-    def retrieve(self, term: str) -> Trie:
-        return self.saved_trie
-
-    def exists(self, term: str) -> bool:
-        return self.saved_trie is not None
+    async def find_terms_by_prefix(self, prefix: str, limit: int) -> list[str]:
+        return find_suggestions(prefix, self.saved_suggestions)[:limit]
 
 
 class PandasTermLoaderPipelineTest(unittest.TestCase):
@@ -56,20 +61,21 @@ class PandasTermLoaderPipelineTest(unittest.TestCase):
                 {"term": "carro", "frequency": 1},
             ])
         })
-        self.__cache = FakeTrieCache()
+        self.__cache = FakeSuggestionCache()
 
     def __build_pipeline(self, logs: list[LogTearmSearch]) -> PandasTermLoaderPipeline:
+        self.__log_source = FakeLogSource(logs=logs)
         return PandasTermLoaderPipeline(
-            log_source=FakeLogSource(logs=logs),
+            log_source=self.__log_source,
             term_file_sotrage=self.__storage,
-            trie_cache=self.__cache,
+            suggestion_cache=self.__cache,
             term_file_name=self.__term_file_name
         )
 
-    def test_load_trie_from_configured_term_file_when_there_is_no_logs(self):
+    def test_load_suggestions_from_configured_term_file_when_there_is_no_logs(self):
         self.__build_pipeline(logs=[]).execute()
 
-        terms = self.__cache.saved_trie.find_terms_by_prefix("ca", 10)
+        terms = find_suggestions("ca", self.__cache.saved_suggestions)
 
         self.assertEqual(terms, ["casa", "carro"])
 
@@ -78,7 +84,7 @@ class PandasTermLoaderPipelineTest(unittest.TestCase):
 
         self.__build_pipeline(logs=logs).execute()
 
-        terms = self.__cache.saved_trie.find_terms_by_prefix("ca", 10)
+        terms = find_suggestions("ca", self.__cache.saved_suggestions)
         self.assertEqual(terms, ["carro", "casa", "cama"])
 
         self.assertEqual(list(self.__storage.files.keys()), [self.__term_file_name])
@@ -96,7 +102,7 @@ class PandasTermLoaderPipelineTest(unittest.TestCase):
 
         self.__build_pipeline(logs=logs).execute()
 
-        terms = self.__cache.saved_trie.find_terms_by_prefix("c", 10)
+        terms = find_suggestions("c", self.__cache.saved_suggestions)
         self.assertEqual(terms, ["casa", "cama", "carro"])
 
         updated_file = self.__storage.files[self.__term_file_name]
@@ -111,7 +117,7 @@ class PandasTermLoaderPipelineTest(unittest.TestCase):
 
         self.__build_pipeline(logs=[]).execute()
 
-        terms = self.__cache.saved_trie.find_terms_by_prefix("c", 10)
+        terms = find_suggestions("c", self.__cache.saved_suggestions)
         self.assertEqual(terms, ["casa"])
 
     def test_sum_frequencies_of_terms_that_differ_only_by_case(self):
@@ -119,7 +125,7 @@ class PandasTermLoaderPipelineTest(unittest.TestCase):
 
         self.__build_pipeline(logs=logs).execute()
 
-        terms = self.__cache.saved_trie.find_terms_by_prefix("ca", 10)
+        terms = find_suggestions("ca", self.__cache.saved_suggestions)
         self.assertEqual(terms, ["casa", "carro"])
 
         updated_file = self.__storage.files[self.__term_file_name]
@@ -136,7 +142,7 @@ class PandasTermLoaderPipelineTest(unittest.TestCase):
 
         self.__build_pipeline(logs=[]).execute()
 
-        terms = self.__cache.saved_trie.find_terms_by_prefix("ca", 10)
+        terms = find_suggestions("ca", self.__cache.saved_suggestions)
         self.assertEqual(terms, ["Carro", "casa"])
 
     def test_keep_spelling_of_term_file_when_logs_have_other_spelling(self):
@@ -150,7 +156,7 @@ class PandasTermLoaderPipelineTest(unittest.TestCase):
         updated_file = self.__storage.files[self.__term_file_name]
         frequencies = dict(zip(updated_file["term"], updated_file["frequency"]))
         self.assertEqual(frequencies, {"Sony Turntable - PSLX350H": 8})
-        self.assertEqual(self.__cache.saved_trie.find_terms_by_prefix("so", 10), ["Sony Turntable - PSLX350H"])
+        self.assertEqual(find_suggestions("so", self.__cache.saved_suggestions), ["Sony Turntable - PSLX350H"])
 
     def test_new_term_from_logs_keep_its_first_spelling(self):
         logs = [LogTearmSearch(term="Cama Box", frequency=2), LogTearmSearch(term="cama box", frequency=1)]
@@ -160,4 +166,46 @@ class PandasTermLoaderPipelineTest(unittest.TestCase):
         updated_file = self.__storage.files[self.__term_file_name]
         frequencies = dict(zip(updated_file["term"], updated_file["frequency"]))
         self.assertEqual(frequencies, {"casa": 3, "carro": 1, "Cama Box": 3})
-        self.assertEqual(self.__cache.saved_trie.find_terms_by_prefix("cam", 10), ["Cama Box"])
+        self.assertEqual(find_suggestions("cam", self.__cache.saved_suggestions), ["Cama Box"])
+
+    def test_save_at_most_max_suggested_terms_for_a_prefix(self):
+        self.__storage.files[self.__term_file_name] = pd.DataFrame([
+            {"term": f"casa {number:03}", "frequency": number} for number in range(MAX_SUGGESTED_TERMS + 10)
+        ])
+
+        self.__build_pipeline(logs=[]).execute()
+
+        terms = find_suggestions("casa", self.__cache.saved_suggestions)
+        self.assertEqual(len(terms), MAX_SUGGESTED_TERMS)
+        self.assertEqual(terms[0], f"casa {MAX_SUGGESTED_TERMS + 9:03}")
+
+    def test_load_suggestions_from_term_file_does_not_count_logs_again(self):
+        logs = [LogTearmSearch(term="carro", frequency=5)]
+
+        self.__build_pipeline(logs=logs).load_suggestions_from_term_file()
+
+        self.assertEqual(find_suggestions("ca", self.__cache.saved_suggestions), ["casa", "carro"])
+        self.assertEqual(self.__log_source.retrieved_times, 0)
+        self.assertEqual(self.__storage.replaced_times, 0)
+
+    def test_load_suggestions_from_term_file_is_skipped_while_another_load_is_running(self):
+        pipeline = self.__build_pipeline(logs=[])
+        # another load is asked in the middle of the first one
+        self.__storage.on_load = pipeline.load_suggestions_from_term_file
+
+        pipeline.load_suggestions_from_term_file()
+
+        self.assertEqual(self.__storage.loaded_times, 1)
+        self.assertEqual(find_suggestions("ca", self.__cache.saved_suggestions), ["casa", "carro"])
+
+    def test_load_suggestions_from_term_file_can_run_again_after_a_failure(self):
+        pipeline = self.__build_pipeline(logs=[])
+        terms = self.__storage.files.pop(self.__term_file_name)
+
+        with self.assertRaises(KeyError):
+            pipeline.load_suggestions_from_term_file()
+
+        self.__storage.files[self.__term_file_name] = terms
+        pipeline.load_suggestions_from_term_file()
+
+        self.assertEqual(find_suggestions("ca", self.__cache.saved_suggestions), ["casa", "carro"])

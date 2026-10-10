@@ -11,3 +11,6 @@ class TermLoaderPipeline(ABC):
 
     def execute():
         raise Exception("not implemented")
+
+    def load_suggestions_from_term_file():
+        raise Exception("not implemented")

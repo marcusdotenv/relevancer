@@ -5,6 +5,11 @@ services:
     hostname: redis
     ports:
       - "6379:6379"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "256MB"
 
   api:
     build: 
@@ -33,6 +38,13 @@ services:
     depends_on:
       - cache
       - localstack
+    # api and cache are the path of a search, so they are limited to make
+    # stress test results comparable between machines and between versions
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: "1GB"
 
   loki:
     image: grafana/loki:3.2.1

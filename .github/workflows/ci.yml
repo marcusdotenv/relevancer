@@ -22,8 +22,5 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Generate protobuf code
-        run: sh generate_proto.sh
-
       - name: Run tests
         run: python -m unittest discover -s src/tests -t . -v

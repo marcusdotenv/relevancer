@@ -1,16 +1,16 @@
 #!/bin/bash
 # Starts the whole stack locally and leaves it ready to be queried:
-#   1. builds and starts the containers (the api container generates trie_pb2.py on startup)
+#   1. builds and starts the containers
 #   2. waits for the term file to be loaded into the localstack bucket
 #   3. waits for the api to answer
-#   4. runs the pipeline, which builds the trie from the term file and loads it into redis
+#   4. runs the pipeline, which builds the suggestions of every prefix from the term file and loads them into redis
 set -euo pipefail
 
 cd "$(dirname "$0")"
 
 API_URL="http://localhost:8000"
 API_LOG="/var/log/api-python.log"
-PIPELINE_DONE_MESSAGE="loaded on trie cache"
+PIPELINE_DONE_MESSAGE="loaded on suggestion cache"
 
 show_api_log_and_exit() {
     echo "ERROR: $1"
@@ -44,7 +44,7 @@ for attempt in $(seq 1 60); do
     sleep 2
 done
 
-echo "==> Running the pipeline to load the trie into redis"
+echo "==> Running the pipeline to load the suggestions into redis"
 runs_before=$(count_pipeline_runs)
 curl -sf -o /dev/null -X POST "$API_URL/pipeline" || show_api_log_and_exit "POST /pipeline failed"
 
@@ -59,7 +59,7 @@ for attempt in $(seq 1 90); do
 done
 
 echo
-echo "Ready. Partitions in redis: $(docker compose exec -T cache redis-cli dbsize)"
+echo "Ready. Prefixes in redis: $(docker compose exec -T cache redis-cli hlen suggestions)"
 echo
 echo "Try it:"
 echo "  curl '$API_URL/auto-complete?term=cas&amount=5'"

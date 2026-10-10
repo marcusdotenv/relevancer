@@ -1,6 +1,8 @@
-# The trie is cached as nested protobuf messages, and a term longer than this
-# exceeds the protobuf nesting limit: the whole partition stops being readable.
+# every prefix of a term is saved on the cache, so the length of a term must be limited
 MAX_TERM_LENGTH = 48
+
+# how many terms can be suggested for a prefix
+MAX_SUGGESTED_TERMS = 50
 
 
 def is_valid_term(term: str) -> bool:
@@ -10,7 +12,7 @@ def is_valid_term(term: str) -> bool:
     if term.strip() == "":
         return False
 
-    # the trie stores the lowered term, which can be longer than the original one
+    # prefixes come from the lowered term, which can be longer than the original one
     if len(term.lower()) > MAX_TERM_LENGTH:
         return False
 
