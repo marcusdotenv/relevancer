@@ -1,7 +1,5 @@
 annotated-types==0.6.0
 anyio==4.3.0
-asyncpg==0.29.0
-beautifulsoup4==4.12.3
 boto3==1.35.24
 botocore==1.35.24
 certifi==2024.8.30
@@ -9,9 +7,10 @@ charset-normalizer==3.3.2
 click==8.1.7
 dnspython==2.6.1
 email_validator==2.2.0
-fastapi==0.115.0
 fastapi-cli==0.0.5
-google==3.0.0
+fastapi==0.115.0
+grpcio-tools==1.66.2
+grpcio==1.66.2
 h11==0.14.0
 httpcore==1.0.5
 httptools==0.6.1
@@ -24,13 +23,10 @@ MarkupSafe==2.1.5
 mdurl==0.1.2
 numpy==2.1.1
 pandas==2.2.3
-protobuf==5.28.2
-psycopg2-binary==2.9.9
-py4j==0.10.9.7
+protobuf==5.27.2
 pydantic==2.6.3
 pydantic_core==2.16.3
 Pygments==2.18.0
-pyspark==3.5.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-multipart==0.0.9
@@ -43,7 +39,6 @@ s3transfer==0.10.2
 shellingham==1.5.4
 six==1.16.0
 sniffio==1.3.1
-soupsieve==2.6
 starlette==0.38.5
 typer==0.12.5
 typing_extensions==4.10.0
