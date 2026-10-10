@@ -42,6 +42,7 @@ class Trie:
             self.__root.assign_new_node(next_node=accumulated_nodes)
 
     def search(self, search_term: str) -> bool:
+        search_term = search_term.lower()
         node_to_search = self.__root
         for idx, letter in enumerate(search_term):
             if not node_to_search.has_node_with_letter(letter):
@@ -62,7 +63,7 @@ class Trie:
 
     def starts_with(self, search_term: str) -> bool:
         node_to_search = self.__root
-        for letter in search_term:
+        for letter in search_term.lower():
             if not node_to_search.has_node_with_letter(letter):
                 return False
             node_to_search = node_to_search.get_next_node_by_letter(letter)
