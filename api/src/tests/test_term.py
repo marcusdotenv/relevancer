@@ -17,7 +17,7 @@ class TermTest(unittest.TestCase):
         self.assertFalse(is_valid_term("a" * (MAX_TERM_LENGTH + 1)))
 
     def test_reject_term_that_gets_longer_than_max_length_when_lowered(self):
-        # "İ".lower() has two characters, and the trie stores the lowered term
+        # "İ".lower() has two characters, and the prefixes come from the lowered term
         self.assertFalse(is_valid_term("İ" * MAX_TERM_LENGTH))
 
     def test_reject_empty_or_blank_term(self):

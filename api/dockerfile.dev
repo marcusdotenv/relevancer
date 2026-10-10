@@ -22,6 +22,4 @@ COPY . .
 
 
 EXPOSE 8000
-# The protobuff serializer file is generated at startup, not at build time:
-# the dev volume mounted over /app would hide a file generated in the image.
-CMD ["sh", "-c", "sh generate_proto.sh && fastapi dev ./src/application/http/main.py --host 0.0.0.0 > /var/log/api-python.log 2>&1 & promtail -config.file=/etc/promtail/promtail-config.yml"]
+CMD ["sh", "-c", "fastapi dev ./src/application/http/main.py --host 0.0.0.0 > /var/log/api-python.log 2>&1 & promtail -config.file=/etc/promtail/promtail-config.yml"]
