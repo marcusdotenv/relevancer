@@ -101,8 +101,8 @@ class TrieTest(unittest.TestCase):
 
 
         related_terms = trie.find_terms_by_prefix("e", limit=10)
-        self.assertEqual(len(related_terms), 2)
-        self.assertEqual(related_terms[0], "Esse é o nome de um produto")
+        self.assertEqual(related_terms, ["Esse é o nome de um produto", "Elefante colorido"])
+        self.assertEqual(trie.find_terms_by_prefix("ES", limit=10), ["Esse é o nome de um produto"])
 
 
     def test_long_strings(self):
@@ -112,5 +112,23 @@ class TrieTest(unittest.TestCase):
         related = trie.find_terms_by_prefix("h", limit=10)
         self.assertEqual(len(related), 1)
 
+    def test_search_ignore_case(self):
+        trie = Trie("root")
+        trie.insert("Casa")
 
+        self.assertTrue(trie.search("Casa"))
+        self.assertTrue(trie.search("casa"))
+        self.assertTrue(trie.search("CASA"))
 
+    def test_insert_same_term_with_other_case_replace_term_and_frequency(self):
+        trie = Trie("root")
+        trie.insert("Casa", 5)
+        trie.insert("casa", 2)
+
+        self.assertEqual(trie.find_terms_by_prefix("ca", limit=10), ["casa"])
+        last_node = trie.get_root_node().get_next_node_by_letter("c")\
+                                    .get_next_node_by_letter("a")\
+                                    .get_next_node_by_letter("s")\
+                                    .get_next_node_by_letter("a")\
+                                    .get_next_node_by_letter("*")
+        self.assertEqual(last_node.get_frequency(), 2)

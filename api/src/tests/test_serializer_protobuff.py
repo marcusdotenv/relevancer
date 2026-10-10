@@ -1,5 +1,6 @@
 import unittest
 
+from src.domain.models.term import MAX_TERM_LENGTH
 from src.domain.models.trie import Trie
 from src.infrastructure.adapters.impl.serializer.proto.protobuff_serializer import ProtobuffSerializer
 
@@ -45,3 +46,14 @@ class TrieTest(unittest.TestCase):
 
         terms2 = deserialized_trie.find_terms_by_prefix("Wh", 10)
         self.assertEqual(["Whirlpool 24' Built-In Dishwasher - DU1100SS"], terms2)
+
+    def test_term_with_max_length_survives_serialization(self):
+        longest_term = "a" * MAX_TERM_LENGTH
+        trie = Trie("root")
+        trie.insert(longest_term, 1)
+
+        serializer = ProtobuffSerializer()
+        serialized_trie = serializer.serialize(trie=trie)
+        deserialized_trie = serializer.deserialize(serialized_bytes=serialized_trie)
+
+        self.assertEqual(deserialized_trie.find_terms_by_prefix("a", 10), [longest_term])

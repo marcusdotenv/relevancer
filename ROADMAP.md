@@ -13,13 +13,13 @@ Ordem por dependência: primeiro a stack sobe e tem teste, depois corrige a entr
 
 ## Fase 1: Validação de entrada
 
-- [ ] Limite de tamanho e charset do termo, na busca e no pipeline.
-- [ ] Normalizar case em ponto único (corrige `trie.py:44`).
-- [ ] `term` vazio retorna 422; `amount` com limites.
-- [ ] Prefixo com maiúscula encontra a partição no cache (`redis_trie_cache.py` usa `term[0]` sem lowercase).
-- [ ] Mesmo termo com case diferente soma a frequência em vez de a última inserção vencer (trie e merge do pipeline).
-- [ ] `Trie.search` faz lowercase como `insert` e `find_terms_by_prefix`.
-- [ ] Um teste para cada bug confirmado.
+- [x] Limite de tamanho e charset do termo, na busca e no pipeline.
+- [x] Normalizar case em ponto único (corrige `trie.py:44`).
+- [x] `term` vazio retorna 422; `amount` com limites.
+- [x] Prefixo com maiúscula encontra a partição no cache (`redis_trie_cache.py` usa `term[0]` sem lowercase).
+- [x] Mesmo termo com case diferente soma a frequência em vez de a última inserção vencer (trie e merge do pipeline).
+- [x] `Trie.search` faz lowercase como `insert` e `find_terms_by_prefix`.
+- [x] Um teste para cada bug confirmado.
 
 **Pronto quando:** busca com maiúscula, busca vazia e `amount` negativo estão corrigidos, e termo longo é rejeitado na entrada.
 
@@ -44,7 +44,7 @@ Ordem por dependência: primeiro a stack sobe e tem teste, depois corrige a entr
 
 ## Fase 4: Qualidade do sinal e segurança
 
-- [ ] Logar só o termo selecionado, não cada tecla.
+- [x] Logar só o termo selecionado, não cada tecla (`POST /auto-complete/select`).
 - [ ] Auth em `/pipeline` e rate limit em `/auto-complete`.
 - [ ] Frequência mínima para um termo novo entrar nas sugestões.
 
@@ -63,4 +63,8 @@ Fuzzy/typo, multi-idioma, escala horizontal.
 ## Decisões em aberto
 
 1. **Formato no Redis (Fase 2).** Recomendado: top-k por prefixo. Elimina a desserialização por request e o limite de profundidade do protobuf. Custo: mais chaves, e precisa de um teto de comprimento de prefixo. Alternativa: manter o protobuf e cachear a trie em memória na API; muda menos, mas mantém o limite de profundidade.
-2. **Sinal de seleção (Fase 4).** Recomendado: endpoint novo `POST /auto-complete/select`, chamado quando o usuário escolhe uma sugestão. Muda o contrato com o cliente.
+
+## Decisões tomadas
+
+- **Sinal de seleção.** `GET /auto-complete` não conta frequência. `POST /auto-complete/select` recebe o termo escolhido ou submetido (texto livre, validado) e é o único que entra no pipeline.
+- **Case.** Termo é identificado em minúsculas; frequências de grafias diferentes somam. A grafia original é preservada e devolvida pela API. Quando duas grafias colidem, vale a primeira: a do arquivo de termos ganha da que vem dos logs.
