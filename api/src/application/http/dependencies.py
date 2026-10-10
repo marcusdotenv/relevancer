@@ -1,3 +1,4 @@
+import os
 
 from fastapi import Depends
 from src.infrastructure.adapters.contracts.trie_cache_contract import TrieCacheContract
@@ -29,7 +30,12 @@ def get_loader_pipeline(
         term_storage: TermFileStorage= Depends(get_term_storage),
         cache: TrieCacheContract=Depends(get_trie_cache)
     ) -> TermLoaderPipeline:
-    return PandasTermLoaderPipeline(log_source=log_source, term_file_sotrage=term_storage,trie_cache=cache)
+    return PandasTermLoaderPipeline(
+        log_source=log_source,
+        term_file_sotrage=term_storage,
+        trie_cache=cache,
+        term_file_name=os.getenv("TERM_FILE_NAME")
+    )
 
 def get_log_source() -> LogSource:
     return LokiLogSource()

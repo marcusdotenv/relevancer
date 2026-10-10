@@ -8,10 +8,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 class PandasTermLoaderPipeline(TermLoaderPipeline):
-    def __init__(self, log_source: LogSource, term_file_sotrage: TermFileStorage, trie_cache: TrieCacheContract) -> None:
+    def __init__(self, log_source: LogSource, term_file_sotrage: TermFileStorage, trie_cache: TrieCacheContract, term_file_name: str) -> None:
         self.__log_source = log_source
         self.__term_file_storage = term_file_sotrage
         self.__trie_cache = trie_cache
+        self.__term_file_name = term_file_name
     
     def execute(self):
         logger.info("Starting pipeline")
@@ -23,19 +24,19 @@ class PandasTermLoaderPipeline(TermLoaderPipeline):
         log_terms = pd.DataFrame(dict_logs)
         new_trie = Trie(partition_name="root")
 
-        known_terms = self.__term_file_storage.load_terms_by_filename(name="default.jsonl")
+        known_terms = self.__term_file_storage.load_terms_by_filename(name=self.__term_file_name)
 
         if len(log_terms) == 0:
             known_terms.apply(lambda row: new_trie.insert(row['term'], row['frequency']), axis=1)
-            logger.info(f"Usign default.json to fill trie")
+            logger.info(f"Usign {self.__term_file_name} to fill trie")
         else:
             updated_terms = known_terms.merge(log_terms, on='term', how='outer', suffixes=('', '_new'))
             updated_terms['frequency'] = updated_terms['frequency'].fillna(0).astype(int) + updated_terms['frequency_new'].fillna(0).astype(int)
             updated_terms = updated_terms[['term', 'frequency']]
             logger.info(f"Locally, the terms was updated")
 
-            self.__term_file_storage.replace_term_file_by_name(name="default.jsonl", updated_df=updated_terms)
-            logger.info("Term File Storage updated the file default.json")
+            self.__term_file_storage.replace_term_file_by_name(name=self.__term_file_name, updated_df=updated_terms)
+            logger.info(f"Term File Storage updated the file {self.__term_file_name}")
 
             updated_terms.apply(lambda row: new_trie.insert(row['term'], row['frequency']), axis=1)
 

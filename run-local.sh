@@ -62,7 +62,7 @@ echo
 echo "Ready. Partitions in redis: $(docker compose exec -T cache redis-cli dbsize)"
 echo
 echo "Try it:"
-echo "  curl '$API_URL/terms?search_term=cas&amount=5'"
+echo "  curl '$API_URL/auto-complete?term=cas&amount=5'"
 echo "  docs:    $API_URL/docs"
 echo "  grafana: http://localhost:3000 (dev/dev)"
 echo "  stop:    docker compose down"
